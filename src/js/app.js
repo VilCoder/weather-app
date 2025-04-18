@@ -1,6 +1,15 @@
 import { format, addDays } from "date-fns";
 
-export default async function getLocationData(location = "United States") {
+
+function toCelsius(fahrenheit) {
+  return Math.round(((fahrenheit - 32) * 5 / 9) * 10) / 10;
+}
+
+function toFahrenheit(celsius) {
+  return Math.round(((celsius * 9 / 5) + 32) * 10) / 10;
+}
+
+export default async function getLocationData(location = "Barranquilla") {
   try {
     const currentDate = new Date();
     const today = format(currentDate, "yyyy-MM-dd");
@@ -17,14 +26,6 @@ export default async function getLocationData(location = "United States") {
 
     const locationData = await response.json();
 
-    function toCelsius(fahrenheit) {
-      return Math.round(((fahrenheit - 32) * 5 / 9) * 100) / 100;
-    }
-
-    function toFahrenheit(celsius) {
-      return Math.round(((celsius * 9 / 5) + 32) * 100) / 100;
-    }
-
     const locationManager = {
       convertToCelsius: toCelsius,
       convertToFahrenheit: toFahrenheit,
@@ -40,6 +41,6 @@ export default async function getLocationData(location = "United States") {
 
     return locationManager;
   } catch (error) {
-    return `Error al obtener los datos: ${error.message}`;
+    return `Error getting data: ${error.message}`;
   }
 }
