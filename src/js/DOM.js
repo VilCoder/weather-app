@@ -2,16 +2,18 @@ import locationIcon from "../icon/map-pin.svg";
 import arrowLeftIcon from "../icon/arrow-left.svg";
 import arrowRightIcon from "../icon/arrow-right.svg";
 
-import cloudyImg from "../image/cloud.png";
+import cloudyImg from "../image/cloudy.png";
 import partlyCloudyImg from "../image/partly-cloudy.png";
 import rainImg from "../image/rain.png";
 import snowyImg from "../image/snowy.png";
 import stormImg from "../image/storm.png";
 import sunImg from "../image/sun.png";
+import cloudImg from "../image/cloud.png";
 
 import { format, parseISO } from "date-fns";
 
 import getLocationData from "./app";
+import initCarousel from "./carousel";
 
 export default async function DOM() {
   try {
@@ -26,14 +28,27 @@ export default async function DOM() {
 
     const query = document.querySelector("#search");
     query.addEventListener("keydown", async (e) => {
-      if (e.key === 'Enter') {
-        alert('entrando');
+      if (e.key === "Enter") {
         locationManager = await getLocationData(query.value);
         locationData = locationManager.getToday();
         nextDaysLocationData = locationManager.getNextDays();
-  
+
         displayTodayLocationData(locationData);
         displayNextDaysLocationData(nextDaysLocationData);
+        initCarousel();
+      }
+    });
+
+    // Enables and disables the button when the input content changes
+    query.addEventListener("input", () => {
+      const searchButton = document.querySelector(".search__button");
+
+      if (query.value) {
+        searchButton.disabled = false;
+        searchButton.classList.add("search__button-active");
+      } else {
+        searchButton.disabled = true;
+        searchButton.classList.remove("search__button-active");
       }
     });
 
@@ -64,6 +79,7 @@ export default async function DOM() {
 
       displayTodayLocationData(locationData, degreeSymbol);
       displayNextDaysLocationData(nextDaysLocationData, degreeSymbol);
+      initCarousel();
 
       if (degreeSymbol === "C") {
         degreeButton.textContent = "F";
@@ -74,8 +90,9 @@ export default async function DOM() {
 
     displayTodayLocationData(locationData);
     displayNextDaysLocationData(nextDaysLocationData);
+    initCarousel();
   } catch (error) {
-    return `Error al obtener los datos: ${error.message}`;
+    return `Error getting data: ${error.message}`;
   }
 }
 
@@ -90,7 +107,7 @@ function displayTodayLocationData(locationData, degreeSymbol = "F") {
     `
     <p class="aside__text">
       <svg class="icon-tabler-map-pin">${locationIcon}</svg>
-      ${locationData.address}
+      ${locationData.resolvedAddress}
     </p>
     <p class="aside__text">Today, ${format(new Date(), "dd MMM yyyy")}</p>
     <figure class="aside__image">
@@ -102,7 +119,7 @@ function displayTodayLocationData(locationData, degreeSymbol = "F") {
     <div class="aside__statistics">
       <p class="statistics__info">
         <span>Precipitation:</span>
-        <span>${locationData.currentConditions.precip}%</span>
+        <span>${locationData.days[0].precip}%</span>
       </p>
       <p class="statistics__info">
         <span>Humidity:</span>
@@ -115,16 +132,6 @@ function displayTodayLocationData(locationData, degreeSymbol = "F") {
       <p class="statistics__info">
         <span>Wind:</span>
         <span>${locationData.currentConditions.windspeed}km/h</span>
-      </p>
-    </div>
-    <div class="aside__statistics">
-      <p class="statistics__info">
-        <span></span>
-        <span>5:30 AM</span>
-      </p>
-      <p class="statistics__info">
-        <span></span>
-        <span>6:00 PM</span>
       </p>
     </div>
     `,
@@ -208,6 +215,8 @@ function displayImage(currentConditions) {
     image.src = snowyImg;
   } else if (currentConditions === "storm") {
     image.src = stormImg;
+  } else {
+    image.src = cloudImg;
   }
 
   return image;

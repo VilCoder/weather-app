@@ -1,5 +1,5 @@
-export default function initCarrousel() {
-  const WIDTH_CARD = 340;
+export default function initCarousel() {
+  const WIDTH_CARD = 340; // Card width + gap
   const carrousel = document.querySelector(".card__content");
   const prevButton = document.querySelector(".card__prev");
   const nextButton = document.querySelector(".card__next");
