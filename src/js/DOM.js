@@ -35,7 +35,7 @@ export default async function DOM() {
 
         displayTodayLocationData(locationData);
         displayNextDaysLocationData(nextDaysLocationData);
-        initCarousel();
+        applyCarouselIfWideScreen();
       }
     });
 
@@ -79,7 +79,7 @@ export default async function DOM() {
 
       displayTodayLocationData(locationData, degreeSymbol);
       displayNextDaysLocationData(nextDaysLocationData, degreeSymbol);
-      initCarousel();
+      applyCarouselIfWideScreen();
 
       if (degreeSymbol === "C") {
         degreeButton.textContent = "F";
@@ -88,9 +88,18 @@ export default async function DOM() {
       }
     });
 
+    const aside = document.querySelector(".layout__aside");
+    aside.classList.add("layout__aside-active");
+    const menuToggle = document.querySelector(".layout__menu-toggle");
+    menuToggle.classList.add("layout__menu-toggle-active");
+    menuToggle.addEventListener("click", () => {
+      aside.classList.toggle("layout__aside-active");
+      menuToggle.classList.toggle("layout__menu-toggle-active");
+    });
+
     displayTodayLocationData(locationData);
     displayNextDaysLocationData(nextDaysLocationData);
-    initCarousel();
+    applyCarouselIfWideScreen();
   } catch (error) {
     return `Error getting data: ${error.message}`;
   }
@@ -220,4 +229,18 @@ function displayImage(currentConditions) {
   }
 
   return image;
+}
+
+function applyCarouselIfWideScreen() {
+  const size = parseInt(document.body.clientWidth, 10);
+  if (size >= 1064) {
+    initCarousel();
+  }
+
+  window.addEventListener("resize", () => {
+    const newSize = parseInt(document.body.clientWidth, 10);
+    if (newSize >= 1064) {
+      initCarousel();
+    }
+  });
 }

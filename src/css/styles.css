@@ -9,14 +9,24 @@ html {
 }
 
 body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ======================= LAYOUT ======================= */
+.layout {
   display: grid;
-  grid-template-columns: 2fr 8fr;
+  grid-template-columns: 3fr 11fr;
   grid-template-rows: auto 1fr;
   grid-template-areas:
-    "aside header"
-    "aside main";
+    "header header"
+    "main main";
   width: 100%;
+  height: 100vh;
+  min-height: 100vh;
   font-size: 1.5rem;
+  overflow: hidden;
 }
 
 svg {
@@ -29,28 +39,35 @@ svg {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  padding: 1.3rem 1.5rem;
+  padding: 1.3rem 1rem;
   border-bottom: 1px solid var(--primary-color);
 }
 
 .header__text:first-child {
-  font-size: 2.5rem;
+  width: 8rem;
+  font-size: 1.7rem;
   font-weight: 500;
+  margin: 1.3rem 0 0.5rem;
 }
 
 .header__text:last-child {
+  width: 8rem;
+  font-size: 1.4rem;
   color: #565656;
+  text-align: center;
 }
 
 .header__search {
-  flex-basis: 70%;
+  flex-basis: 55%;
   display: flex;
   align-self: center;
+  height: 3rem;
 }
 
 .search__input {
   flex: 1 0 auto;
   display: flex;
+  width: 10rem;
 }
 
 .input__icon {
@@ -60,7 +77,8 @@ svg {
 
 .input__box {
   flex: inherit;
-  font-size: 1.8rem;
+  width: 100%;
+  font-size: 1.5rem;
   padding: 0 1.2rem;
   border: 1px solid #00628b;
 }
@@ -84,9 +102,10 @@ svg {
 }
 
 .header__degree {
-  width: 5rem;
-  font-size: 3rem;
   align-self: center;
+  width: 3.5rem;
+  height: 3rem;
+  font-size: 2rem;
   background-color: var(--secondary-color);
   border: none;
   border-radius: 5px;
@@ -103,21 +122,48 @@ svg {
   transform: scale(0.95);
 }
 
+/* ======================= MENU TOGGLE ======================= */
+.layout__menu-toggle {
+  display: block;
+  position: absolute;
+  top: 0.3rem;
+  left: 1%;
+  cursor: pointer;
+  transition: all 310ms ease-in-out;
+  z-index: 10;
+}
+
+.layout__menu-toggle-active {
+  left: 29.5rem;
+}
+
 /* ======================= LAYOUT ASIDE ======================= */
 .layout__aside {
-  grid-area: aside;
-  height: 100vh;
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  max-width: 33rem;
   padding: 1.5rem 2rem;
   background: var(--secondary-color);
   color: var(--primary-color);
-  overflow-y: auto;
+  transition: all 300ms ease-in-out;
+  overflow: auto;
+  opacity: 0;
+  z-index: 5;
+}
+
+.layout__aside-active {
+  left: 0;
+  opacity: 1;
 }
 
 .aside__text:first-of-type {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.8rem;
+  font-size: 2rem;
   margin-bottom: 1rem;
   text-transform: capitalize;
 }
@@ -139,6 +185,8 @@ svg {
 
 .aside__image > img {
   height: 20rem;
+
+  margin: auto;
 }
 
 .image__overlay {
@@ -168,7 +216,6 @@ svg {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  margin-bottom: 1.5rem;
   padding: 1rem 0;
   border-top: 2px solid #4892f5;
 }
@@ -185,32 +232,43 @@ svg {
 .layout__main {
   grid-area: main;
   display: grid;
-  place-content: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 2rem 0;
+  overflow: auto;
 }
 
 .main__card {
+  display: flex;
+  align-items: center;
   position: relative;
-  width: 100rem;
-  padding: 1rem;
-  padding-top: 3.5rem;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100rem;
+  height: 100%;
+  padding: 0;
+  overflow: auto;
 }
 
 .card__content {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0 4rem;
+  gap: 4rem;
+  height: 100vh;
   margin: auto;
+  padding-bottom: 1rem;
   transition: transform 300ms ease-in-out;
   will-change: transform;
 }
 
 .card__prev,
 .card__next {
+  display: none;
   position: absolute;
-  top: 0.3rem;
-  right: 1rem;
+  top: 0.5rem;
+  right: 0;
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
@@ -218,24 +276,15 @@ svg {
   z-index: 10;
 }
 
-.card__prev:hover,
-.card__next:hover {
-  fill: var(--secondary-color);
-}
-
-.card__prev {
-  right: 4rem;
-}
-
 .card__item {
-  flex: 0 0 auto; /* que no se achiquen */
+  flex: 0 0 auto; /* That they do not shrink */
   width: 30rem;
-  height: 35rem;
+  height: 32rem;
   font-size: 1.5rem;
   background: transparent;
   text-align: center;
   transition: 300ms;
-  scroll-snap-align: start; /* cada card se alinea al inicio al hacer scroll */
+  scroll-snap-align: start; /* Each card is aligned to be beginning when scrolling */
   perspective: 1000px;
 }
 

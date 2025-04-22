@@ -1,0 +1,29 @@
+/* ====================== SCROLL CHROME SIDEBAR ======================*/
+.layout__aside::-webkit-scrollbar {
+  width: 18px;
+}
+
+.layout__aside::-webkit-scrollbar-track {
+  margin: 3rem;
+  background: var(--secondary-color);
+}
+
+.layout__aside::-webkit-scrollbar-thumb {
+  background: #d3d3d4;
+  border-radius: 15px;
+  border: 7px solid var(--secondary-color);
+}
+
+.layout__aside::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+.layout__aside:hover::-webkit-scrollbar-thumb:hover {
+  border: 5px solid var(--secondary-color);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .layout__aside {
+    scrollbar-color: var(--primary-color) var(--secondary-color);
+  }
+}
