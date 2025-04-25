@@ -77,7 +77,7 @@ svg {
 
 .input__box {
   flex: inherit;
-  width: 100%;
+  width: 90%;
   font-size: 1.5rem;
   padding: 0 1.2rem;
   border: 1px solid #00628b;

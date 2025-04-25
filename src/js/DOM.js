@@ -2,18 +2,10 @@ import locationIcon from "../icon/map-pin.svg";
 import arrowLeftIcon from "../icon/arrow-left.svg";
 import arrowRightIcon from "../icon/arrow-right.svg";
 
-import cloudyImg from "../image/cloudy.png";
-import partlyCloudyImg from "../image/partly-cloudy.png";
-import rainImg from "../image/rain.png";
-import snowyImg from "../image/snowy.png";
-import stormImg from "../image/storm.png";
-import sunImg from "../image/sun.png";
-import cloudImg from "../image/cloud.png";
-
 import { format, parseISO } from "date-fns";
 
-import getLocationData from "./app";
-import initCarousel from "./carousel";
+import getLocationData, { getWeatherImage } from "./app";
+import initCarousel, { destroyCarousel } from "./carousel";
 
 export default async function DOM() {
   try {
@@ -33,8 +25,8 @@ export default async function DOM() {
         locationData = locationManager.getToday();
         nextDaysLocationData = locationManager.getNextDays();
 
-        displayTodayLocationData(locationData);
-        displayNextDaysLocationData(nextDaysLocationData);
+        await displayTodayLocationData(locationData);
+        await displayNextDaysLocationData(nextDaysLocationData);
         applyCarouselIfWideScreen();
       }
     });
@@ -53,7 +45,7 @@ export default async function DOM() {
     });
 
     const degreeButton = document.querySelector(".header__degree");
-    degreeButton.addEventListener("click", () => {
+    degreeButton.addEventListener("click", async () => {
       const degreeSymbol = degreeButton.textContent;
       const { temp } = locationData.currentConditions;
 
@@ -77,15 +69,11 @@ export default async function DOM() {
         });
       }
 
-      displayTodayLocationData(locationData, degreeSymbol);
-      displayNextDaysLocationData(nextDaysLocationData, degreeSymbol);
+      await displayTodayLocationData(locationData, degreeSymbol);
+      await displayNextDaysLocationData(nextDaysLocationData, degreeSymbol);
       applyCarouselIfWideScreen();
 
-      if (degreeSymbol === "C") {
-        degreeButton.textContent = "F";
-      } else {
-        degreeButton.textContent = "C";
-      }
+      degreeButton.textContent = degreeSymbol === "C" ? "F" : "C";
     });
 
     const aside = document.querySelector(".layout__aside");
@@ -97,17 +85,17 @@ export default async function DOM() {
       menuToggle.classList.toggle("layout__menu-toggle-active");
     });
 
-    displayTodayLocationData(locationData);
-    displayNextDaysLocationData(nextDaysLocationData);
+    await displayTodayLocationData(locationData);
+    await displayNextDaysLocationData(nextDaysLocationData);
     applyCarouselIfWideScreen();
   } catch (error) {
     return `Error getting data: ${error.message}`;
   }
 }
 
-function displayTodayLocationData(locationData, degreeSymbol = "F") {
+async function displayTodayLocationData(locationData, degreeSymbol = "F") {
   const currentConditions = locationData.currentConditions.icon;
-  const image = displayImage(currentConditions);
+  const imageSrc = await getWeatherImage(currentConditions);
 
   const locationInfo = document.querySelector(".aside__info");
   locationInfo.textContent = "";
@@ -120,7 +108,7 @@ function displayTodayLocationData(locationData, degreeSymbol = "F") {
     </p>
     <p class="aside__text">Today, ${format(new Date(), "dd MMM yyyy")}</p>
     <figure class="aside__image">
-      ${image.outerHTML}
+      <img src="${imageSrc}" alt="${locationData.currentConditions.conditions}" />
       <span class="image__overlay">${locationData.currentConditions.conditions}</span>
       <figcaption class="image__text">${locationData.description}</figcaption>
     </figure>
@@ -147,9 +135,15 @@ function displayTodayLocationData(locationData, degreeSymbol = "F") {
   );
 }
 
-function displayNextDaysLocationData(nextDaysLocationData, degreeSymbol = "F") {
-  const mainContent = document.querySelector(".main__card");
-  mainContent.textContent = "";
+async function displayNextDaysLocationData(
+  nextDaysLocationData,
+  degreeSymbol = "F",
+) {
+  const mainContainer = document.querySelector(".layout__main");
+  mainContainer.textContent = "";
+
+  const mainContent = document.createElement("div");
+  mainContent.classList.add("main__card");
   mainContent.insertAdjacentHTML(
     "beforeend",
     `
@@ -160,11 +154,10 @@ function displayNextDaysLocationData(nextDaysLocationData, degreeSymbol = "F") {
 
   const carrousel = document.createElement("div");
   carrousel.classList.add("card__content");
-  Object.values(nextDaysLocationData).map((nextDay) => {
-    const date = parseISO(nextDay.datetime);
 
-    const currentConditions = nextDay.icon;
-    const image = displayImage(currentConditions);
+  for (const nextDay of nextDaysLocationData) {
+    const date = parseISO(nextDay.datetime);
+    const imageSrc = await getWeatherImage(nextDay.icon);
 
     carrousel.insertAdjacentHTML(
       "beforeend",
@@ -174,7 +167,7 @@ function displayNextDaysLocationData(nextDaysLocationData, degreeSymbol = "F") {
           <div class="card__front">
             <p class="card__day">${format(date, "eee")}</p>
             <figure class="card__image">
-              ${image.outerHTML}
+              <img src="${imageSrc}" alt="${nextDay.conditions}" />
               <figcaption class="card__text">
                 ${nextDay.conditions}
               </figcaption>
@@ -204,31 +197,10 @@ function displayNextDaysLocationData(nextDaysLocationData, degreeSymbol = "F") {
       </div>
       `,
     );
-  });
-
-  mainContent.appendChild(carrousel);
-}
-
-function displayImage(currentConditions) {
-  const image = document.createElement("img");
-
-  if (currentConditions === "partly-cloudy-day") {
-    image.src = partlyCloudyImg;
-  } else if (currentConditions === "clear-day") {
-    image.src = sunImg;
-  } else if (currentConditions === "rain") {
-    image.src = rainImg;
-  } else if (currentConditions === "cloudy") {
-    image.src = cloudyImg;
-  } else if (currentConditions === "snow") {
-    image.src = snowyImg;
-  } else if (currentConditions === "storm") {
-    image.src = stormImg;
-  } else {
-    image.src = cloudImg;
   }
 
-  return image;
+  mainContent.appendChild(carrousel);
+  mainContainer.appendChild(mainContent);
 }
 
 function applyCarouselIfWideScreen() {
@@ -241,6 +213,8 @@ function applyCarouselIfWideScreen() {
     const newSize = parseInt(document.body.clientWidth, 10);
     if (newSize >= 1064) {
       initCarousel();
+    } else {
+      destroyCarousel();
     }
   });
 }

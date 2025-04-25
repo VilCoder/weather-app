@@ -1,12 +1,11 @@
 import { format, addDays } from "date-fns";
 
-
 function toCelsius(fahrenheit) {
-  return Math.round(((fahrenheit - 32) * 5 / 9) * 10) / 10;
+  return Math.round((((fahrenheit - 32) * 5) / 9) * 10) / 10;
 }
 
 function toFahrenheit(celsius) {
-  return Math.round(((celsius * 9 / 5) + 32) * 10) / 10;
+  return Math.round(((celsius * 9) / 5 + 32) * 10) / 10;
 }
 
 export default async function getLocationData(location = "Barranquilla") {
@@ -33,7 +32,7 @@ export default async function getLocationData(location = "Barranquilla") {
       getToday() {
         return locationData;
       },
-      
+
       getNextDays() {
         return locationData.days.slice(1);
       },
@@ -42,5 +41,16 @@ export default async function getLocationData(location = "Barranquilla") {
     return locationManager;
   } catch (error) {
     return `Error getting data: ${error.message}`;
+  }
+}
+
+export async function getWeatherImage(condition) {
+  try {
+    const imageModule = await import(`../image/${condition}.png`);
+    return imageModule.default; // Obtiene la URL real
+  } catch (error) {
+    console.log(`Icon for ${condition} not found, ${error}`);
+    const fallback = await import("../image/partly-cloudy-day.png");
+    return fallback.default;
   }
 }
