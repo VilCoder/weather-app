@@ -18,23 +18,22 @@ export default async function DOM() {
     let locationData = locationManager.getToday();
     let nextDaysLocationData = locationManager.getNextDays();
 
-    const query = document.querySelector("#search");
-    query.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter") {
-        locationManager = await getLocationData(query.value);
-        locationData = locationManager.getToday();
-        nextDaysLocationData = locationManager.getNextDays();
+    const searchButton = document.querySelector(".search__button");
+    searchButton.addEventListener("click", async (event) => {
+      if (!event.currentTarget.disabled) {
+        await handleSearchSubmit();
+      }
+    })
 
-        await displayTodayLocationData(locationData);
-        await displayNextDaysLocationData(nextDaysLocationData);
-        applyCarouselIfWideScreen();
+    const query = document.querySelector("#search");
+    query.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter") {
+        await handleSearchSubmit();
       }
     });
 
     // Enables and disables the button when the input content changes
     query.addEventListener("input", () => {
-      const searchButton = document.querySelector(".search__button");
-
       if (query.value) {
         searchButton.disabled = false;
         searchButton.classList.add("search__button-active");
@@ -85,6 +84,28 @@ export default async function DOM() {
       menuToggle.classList.toggle("layout__menu-toggle-active");
     });
 
+    async function handleSearchSubmit() {
+      try {
+        locationManager = await getLocationData(query.value);
+        locationData = locationManager.getToday();
+        nextDaysLocationData = locationManager.getNextDays();
+
+        await displayTodayLocationData(locationData);
+        await displayNextDaysLocationData(nextDaysLocationData);
+        applyCarouselIfWideScreen();
+
+        query.value = "";
+        query.dispatchEvent(new Event("input")); // Fires the input event
+        degreeButton.textContent = "C";
+      } catch (error) {
+        alert(
+          "Unable to get weather for that location. Try another location.",
+        );
+        query.value = "";
+        query.dispatchEvent(new Event("input"));
+      }
+    }
+
     await displayTodayLocationData(locationData);
     await displayNextDaysLocationData(nextDaysLocationData);
     applyCarouselIfWideScreen();
@@ -93,7 +114,10 @@ export default async function DOM() {
   }
 }
 
-async function displayTodayLocationData(locationData, degreeSymbol = "F") {
+export async function displayTodayLocationData(
+  locationData,
+  degreeSymbol = "F",
+) {
   const currentConditions = locationData.currentConditions.icon;
   const imageSrc = await getWeatherImage(currentConditions);
 
@@ -135,7 +159,7 @@ async function displayTodayLocationData(locationData, degreeSymbol = "F") {
   );
 }
 
-async function displayNextDaysLocationData(
+export async function displayNextDaysLocationData(
   nextDaysLocationData,
   degreeSymbol = "F",
 ) {

@@ -13,11 +13,9 @@ export default async function getLocationData(location = "Barranquilla") {
     const currentDate = new Date();
     const today = format(currentDate, "yyyy-MM-dd");
     const nextSevenDays = format(addDays(currentDate, 6), "yyyy-MM-dd");
+    const URL = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/${today}/${nextSevenDays}?key=WLZUW7VWSMA62LC9S2N4RZ2DX`;
 
-    const response = await fetch(
-      `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/${today}/${nextSevenDays}?key=WLZUW7VWSMA62LC9S2N4RZ2DX`,
-      { mode: "cors" },
-    );
+    const response = await fetch(URL, { mode: "cors" });
 
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
@@ -40,14 +38,15 @@ export default async function getLocationData(location = "Barranquilla") {
 
     return locationManager;
   } catch (error) {
-    return `Error getting data: ${error.message}`;
+    console.log(`Error getting data: ${error.message}`);
+    throw error;
   }
 }
 
 export async function getWeatherImage(condition) {
   try {
     const imageModule = await import(`../image/${condition}.png`);
-    return imageModule.default; // Obtiene la URL real
+    return imageModule.default; // get the real URL
   } catch (error) {
     console.log(`Icon for ${condition} not found, ${error}`);
     const fallback = await import("../image/partly-cloudy-day.png");
