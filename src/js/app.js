@@ -1,19 +1,6 @@
-import { format, addDays } from "date-fns";
-
-function toCelsius(fahrenheit) {
-  return Math.round((((fahrenheit - 32) * 5) / 9) * 10) / 10;
-}
-
-function toFahrenheit(celsius) {
-  return Math.round(((celsius * 9) / 5 + 32) * 10) / 10;
-}
-
-export default async function getLocationData(location = "Barranquilla") {
+export default async function getLocationData(location, unit) {
   try {
-    const currentDate = new Date();
-    const today = format(currentDate, "yyyy-MM-dd");
-    const nextSevenDays = format(addDays(currentDate, 6), "yyyy-MM-dd");
-    const URL = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/${today}/${nextSevenDays}?key=WLZUW7VWSMA62LC9S2N4RZ2DX`;
+    const URL = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/next6days?unitGroup=${unit}&key=WLZUW7VWSMA62LC9S2N4RZ2DX`;
 
     const response = await fetch(URL, { mode: "cors" });
 
@@ -24,9 +11,6 @@ export default async function getLocationData(location = "Barranquilla") {
     const locationData = await response.json();
 
     const locationManager = {
-      convertToCelsius: toCelsius,
-      convertToFahrenheit: toFahrenheit,
-
       getToday() {
         return locationData;
       },

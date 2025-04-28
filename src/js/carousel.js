@@ -1,7 +1,13 @@
-let timeout;
+let interval;
+let prevButtonListener;
+let nextButtonListener;
+let mouseEnterListeners = [];
+let mouseLeaveListeners = [];
 
 export default function initCarousel() {
-  const WIDTH_CARD = 340; // Card width + gap
+  destroyCarousel();
+
+  const WIDTH_CARD = 340; // Width + gap
   const carousel = document.querySelector(".card__content");
   const prevButton = document.querySelector(".card__prev");
   const nextButton = document.querySelector(".card__next");
@@ -17,41 +23,73 @@ export default function initCarousel() {
     }
 
     carousel.style.transform = `translateX(-${(currentCard - 1) * WIDTH_CARD}px)`;
+  }
 
-    timeout = setTimeout(() => {
+  function startAutoCarousel() {
+    interval = setInterval(() => {
       currentCard += 1;
       updateCarousel();
     }, 2000);
   }
 
-  prevButton.addEventListener("click", () => {
-    clearTimeout(timeout);
+  prevButtonListener = () => {
+    clearInterval(interval);
     currentCard -= 1;
     updateCarousel();
-  });
+    startAutoCarousel();
+  };
 
-  nextButton.addEventListener("click", () => {
-    clearTimeout(timeout);
+  nextButtonListener = () => {
+    clearInterval(interval);
     currentCard += 1;
     updateCarousel();
-  });
+    startAutoCarousel();
+  };
+
+  prevButton.addEventListener("click", prevButtonListener);
+  nextButton.addEventListener("click", nextButtonListener);
 
   cardInner.forEach((item) => {
-    item.addEventListener("mouseenter", () => {
-      clearTimeout(timeout);
-    });
+    const mouseEnter = () => clearInterval(interval);
+    const mouseLeave = () => startAutoCarousel();
 
-    item.addEventListener("mouseleave", updateCarousel);
+    item.addEventListener("mouseenter", mouseEnter);
+    item.addEventListener("mouseleave", mouseLeave);
+
+    mouseEnterListeners.push({ item, listener: mouseEnter });
+    mouseLeaveListeners.push({ item, listener: mouseLeave });
   });
 
   updateCarousel();
+  startAutoCarousel();
 }
 
 export function destroyCarousel() {
   const carousel = document.querySelector(".card__content");
-  
-  if (!carousel) return;
+  const prevButton = document.querySelector(".card__prev");
+  const nextButton = document.querySelector(".card__next");
 
-  clearTimeout(timeout);
-  carousel.style.transform = "none";
+  if (carousel) {
+    clearInterval(interval);
+    carousel.style.transform = "none";
+  }
+
+  if (prevButton && prevButtonListener) {
+    prevButton.removeEventListener("click", prevButtonListener);
+  }
+
+  if (nextButton && nextButtonListener) {
+    nextButton.removeEventListener("click", nextButtonListener);
+  }
+
+  mouseEnterListeners.forEach(({ item, listener }) => {
+    item.removeEventListener("mouseenter", listener);
+  });
+
+  mouseLeaveListeners.forEach(({ item, listener }) => {
+    item.removeEventListener("mouseleave", listener);
+  });
+
+  mouseEnterListeners = [];
+  mouseLeaveListeners = [];
 }
